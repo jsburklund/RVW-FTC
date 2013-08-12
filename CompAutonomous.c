@@ -193,7 +193,7 @@ void leftSide(int power) {
 
 void rightSide(int power) {
   motor[motorD] = power;
-  motor[motorG] = power;
+  motor[motorF] = power;
 }
 
 void stopDriving() {
@@ -266,7 +266,7 @@ void turnLeftSpeed(int speed) {
 
 void turnRightSpeed(int speed) {
   leftSide(speed);
-  rightSide(speed);
+  rightSide(-speed);
 }
 
 void turnGyro(int speed, int heading) {
