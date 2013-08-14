@@ -16,9 +16,15 @@ int kRed  = 30;
 int kGrey = 78;
 int kWhite = 89;
 
+long kLowRackPos = 600;
+long kMidRackPos = 2000;
+long kHighRackPos = 2800;
+long armPosition = kLowRackPos;
+
 //------------- Globals -----------------------
 //for user feedback
 long reading;
+long readingHead;
 
 //------------- Function Declarations ---------
 void resetDriveEncoders();
@@ -35,12 +41,14 @@ void driveBackwardSpeed(int speed);
 void driveBackwardEncoder(int speed, long ticks);
 void turnLeftSpeed(int speed);
 void turnRightSpeed(int speed);
-void turnGyro(int speed, int heading);
+void turnLeftGyro(int speed, int heading);
+void turnRightGyro(int speed, int heading);
+
 void closeGripper();
 void openGripper();
-void gripperUp();
-void liftArm(long pos);
-void armToPosition(int speed, long pos);
+task gripperUp();
+task liftArm();
+task lowerArm();
 task readSonar();
 
 
@@ -49,116 +57,166 @@ task readSonar();
 
 task main() {
   initializeRobot();
-	StartTask(readSonar);
-	gripperUp();
+	StartTask(gripperUp);
 
-	armToPosition(75, 800);
-	turnGyro(100, -400);
-	driveForwardEncoder(100, (12*1440) );	//drive close to the center white line
+	armPosition = kLowRackPos;
+	StartTask(liftArm);
+	//------------------ Score on left Bonus Peg -----------------------------
+	turnLeftGyro(100, -415);
+	driveForwardEncoder(100, (6*1440) );	//drive close to the center white line
+	turnRightGyro(100, 0);
+	driveForwardEncoder(100, 1440);
+	openGripper();
+	driveBackwardEncoder(100, 1440);
+	closeGripper();
+	turnLeftGyro(100, -415);
+  driveForwardEncoder(100, 6*1440);
 	driveForwardToLine(50, kWhite);				//detect the center white line
 
-	turnGyro(100, -950);
+	turnLeftGyro(100, -950);
 	driveForwardSonar(100, 3);		//drive forward to the wall
 	openGripper();
-	driveForwardTime(100, 500);			//ram the wall for auto-alignment
+	driveForwardTime(100, 750);			//ram the wall for auto-alignment
+/*//------------------- Score on Left Bonus Peg x2 -------------------------
+	driveBackwardEncoder(100, 1440);
+	closeGripper();
+	turnLeftGyro(100, -1300);
+	driveBackwardEncoder(100, 5.5*1440);
+	driveForwardEncoder(100, 5*1440);
+	driveForwardToLine(50, kWhite);
 
+	turnRightGyro(100, -950);
+	driveForwardSonar(100, 3);
+	openGripper();
+	driveForwardTime(100, 750);
+*/
+	//------------------- Score on right Bonus peg ---------------------------
 	driveBackwardEncoder(100, 1440);			//align and drive to next reload station
 	closeGripper();
-	turnGyro(100, -1100);
+	turnLeftGyro(100, -1100);
 	driveBackwardEncoder(100, (15*1440));
 
-	turnGyro(100, -2200);									//align and drive to white line TODO Add distance failsafe: if over distance, turn slightly and back up
+	turnLeftGyro(100, -2200);									//align and drive to white line TODO Add distance failsafe: if over distance, turn slightly and back up
 	driveForwardEncoder(100, (4.5*1440));
 	driveForwardToLine(50, kWhite);
 
-	turnGyro(100, -2750);				//score ring on bonus peg
+	turnLeftGyro(100, -2750);				//score ring on bonus peg
 	driveForwardSonar(100, 3);
 	openGripper();
 	driveForwardTime(100, 500);
+/*//-------------------- Score on right Bonus Peg x2 -----------------------
+	driveBackwardEncoder(100, 1440);
+	closeGripper();
+	turnRightGyro(100, -2200);
+	driveBackwardEncoder(100, 5.75*1440);
+	driveForwardEncoder(100, 5*1440);
+	driveForwardToLine(50, kWhite);
 
-	//-------------------- Score on low peg 1 -------------------------------
+	turnLeftGyro(100, -2750);
+	driveForwardSonar(100, 3);
+	openGripper();
+	driveForwardTime(100, 500);
+*/
+	//-------------------- Score on low peg 1 --------------------------------
 	driveBackwardEncoder(100, 1440);		//align robot and drive to next reload station
 	closeGripper();
-	turnGyro(100, -3100);
+	turnLeftGyro(100, -3100);
 	driveBackwardEncoder(100, (5.5*1440));
 
-	turnGyro(100, -3800);								//align and drive to Centerline
+	turnLeftGyro(100, -3800);								//align and drive to Centerline
 	driveForwardEncoder(100, (3*1440));
 	driveForwardToLine(50, kWhite);
 
-	turnGyro(100, -4500);		//align and drive to low center rack
+	turnLeftGyro(100, -4500);		//align and drive to low center rack
 	driveForwardEncoder(100, (2*1440));
 	openGripper();
 
   //-------------------- Score on low peg 2 --------------------------------
 	driveBackwardEncoder(100, 1440);	//align and drive to next reload station
 	closeGripper();
-	turnGyro(100, -5200);
+	turnLeftGyro(100, -5200);
 	driveBackwardEncoder(100, (5*1440));
 
-	turnGyro(100, -4850);             //align and drive to center line
+	turnRightGyro(100, -4850);             //align and drive to center line
 	driveForwardEncoder(100, (6.5*1440));
 	driveForwardToLine(50, kWhite);
 
-	turnGyro(100, -6200);             //align and drive to low center rack
+	turnLeftGyro(100, -6200);             //align and drive to low center rack
 	driveForwardEncoder(100, (0.75*1440));
 	openGripper();
 
 	//-------------------- Score on mid peg 2 --------------------------------
 	driveBackwardEncoder(100, 1440);  //align and drive to next reload station
 	closeGripper();
-	turnGyro(100, -5700);
-	driveBackwardEncoder(100, (4.5*1440));
-	armToPosition(75, 2000);
+	turnRightGyro(100, -5700);
+	driveBackwardEncoder(100, (4.75*1440));
+	armPosition = kMidRackPos;
+	StartTask(liftArm);
 
 	driveForwardEncoder(100, (3*1440)); //align and drive to centerLine
 	driveForwardToLine(50, kWhite);
 
-	turnGyro(100, -6350);               //align and drive to mid 2 center rack
+	turnLeftGyro(100, -6350);               //align and drive to mid 2 center rack
 	driveForwardEncoder(100, (1.5*1440));
 	openGripper();
 
   //-------------------- Score on high peg 2 --------------------------------
 	driveBackwardEncoder(100, (1.5*1440));    //align and drive to next reload station
 	closeGripper();
-	turnGyro(100, -5700);
+	turnRightGyro(100, -5700);
 	driveBackwardEncoder(100, (5.5*1400));
-	armToPosition(75, 2800);
+	armPosition = kHighRackPos;
+	StartTask(liftArm);
 
 	driveForwardEncoder(100, (3*1440)); //align and drive to centerline
 	driveForwardToLine(50, kWhite);
 
-	turnGyro(100, -6350);               //align and drive to high 2 center rack
+	turnLeftGyro(100, -6350);               //align and drive to high 2 center rack
 	driveForwardEncoder(100, (1.5*1400));
 	openGripper();
 
 	//-------------------- Score on high peg 1 --------------------------------
 	driveBackwardEncoder(100, 1440);    //align and drive to next reload station
 	closeGripper();
-	turnGyro(100, -6950);
+	turnLeftGyro(100, -6950);
 	driveBackwardEncoder(100, (6*1440));
 
-	turnGyro(60, -6650);               //align and drive to centerline
+	turnRightGyro(60, -6650);               //align and drive to centerline
 	driveForwardEncoder(100, (8*1440));
 	driveForwardToLine(50, kWhite);
 
-	turnGyro(100, -8050);               //align and drive to high 1 center rack
+	turnLeftGyro(100, -8050);               //align and drive to high 1 center rack
 	driveForwardEncoder(100, (1.5*1440));
 	openGripper();
 
 	//-------------------- Score on mid peg 1 --------------------------------
 	driveBackwardEncoder(100, (1.5*1440));  //align and drive to next Reload Station
 	closeGripper();
-	turnGyro(100, -7600);
+	turnRightGyro(100, -7600);
 	driveBackwardEncoder(100, (4.5*1440));
-	armToPosition(75, 2000);
+	armPosition = kMidRackPos;
+	StartTask(lowerArm);
 
 	driveForwardEncoder(100, (3*1440));   //align and drive to centerline
 	driveForwardToLine(50, kWhite);
 
-	turnGyro(100, -8100);
-	driveForwardEncoder(100, (1.50*1440));   //align and drive to mid 1 center rack
+	turnLeftGyro(100, -8100);
+	driveForwardEncoder(100, (1.25*1440));   //align and drive to mid 1 center rack
 	openGripper();
+
+	//-------------------- Score on mid peg 1 x2 -----------------------------
+	driveBackwardEncoder(100, 1.5*1440);
+	closeGripper();
+	turnRightGyro(100, -7600);
+	driveBackwardEncoder(100, 4.75*1440);
+
+	driveForwardEncoder(100, 3*1440);
+	driveForwardToLine(50, kWhite);
+
+	turnLeftGyro(100, -8100);
+	driveForwardEncoder(100, 1.25*1400);
+	openGripper();
+	driveBackwardEncoder(100, 1440);
 
 
 	stopDriving();
@@ -172,8 +230,8 @@ task main() {
 
 //------------- Function Definitions -----------
 void resetDriveEncoders() {
-  nMotorEncoder[motorH] = 0;
-	nMotorEncoder[motorB] = 0;
+  nMotorEncoder[motorF] = 0;
+	nMotorEncoder[motorG] = 0;
 }
 
 void initializeRobot() {
@@ -269,6 +327,28 @@ void turnRightSpeed(int speed) {
   rightSide(-speed);
 }
 
+void turnLeftGyro(int speed, int heading) {
+  while (SensorValue[Gyro] > heading) { //turns to the heading at
+    turnLeftSpeed(speed);               //high speed to get an approximate heading
+  }
+  while (SensorValue[Gyro] < heading) { //turn back to the heading
+    turnRightSpeed(speed/5);            //at a slower speed for a finer heading
+  }
+  stopDriving();
+  readingHead = SensorValue[Gyro];
+}
+
+void turnRightGyro(int speed, int heading) {
+  while (SensorValue[Gyro] < heading) {
+    turnRightSpeed(speed);
+  }
+  while (SensorValue[Gyro] > heading) {
+    turnLeftSpeed(speed/5);
+  }
+  stopDriving();
+  readingHead = SensorValue[Gyro];
+}
+
 void turnGyro(int speed, int heading) {
 	int largeThreshold = 45;		//stair stepped threshold values
 	int threshold = 0.5;				//large threshold for a general heading range, and then a threshold for fine tuning
@@ -308,7 +388,7 @@ void openGripper() {
 	}																				//set position
 	motor[motorA] = 0;
 }
-void gripperUp() {
+task gripperUp() {
   nMotorEncoder(motorB) = 0;
 
   motor[motorB] = 100;  //move motor outside of sticking point
@@ -320,26 +400,24 @@ void gripperUp() {
     reading = nMotorEncoder[motorB];
   }
   motor[motorB] = 0;
+  StopTask(gripperUp);
 }
 
-void liftArm(long pos) {
-	while (nMotorEncoder[motorH] < pos) {
-		motor[motorH] = 50;
+task liftArm() {
+  motor[motorH] = 50;
+	while (nMotorEncoder[motorH] < armPosition) {
+	  reading = nMotorEncoder[motorH];
 	}
 	motor[motorH] = 0;
+	StopTask(liftArm);
 }
 
-void armToPosition(int speed, long pos) {
-	int threshold = 20;
-	while ( abs(pos-nMotorEncoder[motorH]) > threshold ) {
-		if ((pos-nMotorEncoder[motorH] > 0)) {
-			motor[motorH] = speed;
-		}
-		else {
-			motor[motorH] = -speed;
-		}
-	}
-	motor[motorH] = 0;
+task lowerArm() {
+  motor[motorH] = -50;
+  while (nMotorEncoder[motorH] > armPosition) {
+  }
+  motor[motorH] = 0;
+  StopTask(lowerArm);
 }
 
 task readSonar() {
