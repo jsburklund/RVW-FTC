@@ -172,8 +172,8 @@ task main() {
 
 //------------- Function Definitions -----------
 void resetDriveEncoders() {
-  nMotorEncoder[motorH] = 0;
-	nMotorEncoder[motorB] = 0;
+  nMotorEncoder[motorF] = 0;
+	nMotorEncoder[motorG] = 0;
 }
 
 void initializeRobot() {
