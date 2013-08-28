@@ -106,12 +106,51 @@ task main() {
 	wait1Msec(100);   //allow time for the ring to drop and roll away
 
 	//------- Go to next dispensor -------
-	turnRightGyro(100, -500);   //TODO fix this part because it consistantly misses!!!
+	turnRightGyro(100, -520);   //TODO fix this part because it consistantly misses!!!
+	closeGripper();
 	driveForwardToLine(100, kWhite);
+
+	//------- Score in low goal 4 -------
+	turnRightGyro(100, 500);
+	driveForwardEncoder(100, 1.25*1440);
+	openGripper();
+
+	//------- Return to dispensor
+	driveBackwardToLine(100, kWhite);
+	closeGripper();
+
+	//------- score on left low peg -------
+	turnLeftGyro(100, 200);
+	driveForwardEncoder(100, 3*1440);
+	driveForwardToLine(100, kWhite);
+	turnRightGyro(100, 900);
+	openGripper();
+
+	//------- Return to dispensor -------
+	turnLeftGyro(100, 200);
+	driveBackwardEncoder(100, 1440);
+	driveBackwardToLine(100, kWhite);
+	closeGripper();
+
+	//------- Score on left mid peg -------
+	driveForwardEncoder(100, 3*1440);
+	armPosition = kMidRackPos;
+	StartTask(liftArm);
+	driveForwardToLine(100, kWhite);
+	turnRightGyro(100, 900);
+	openGripper();
+
+	//------- Return to dispensor -------
+	turnLeftGyro(100, 200);
+	driveBackwardEncoder(100, 1440);
+	driveBackwardToLine(100, kWhite);
 	closeGripper();
 
 	//------- Score on left Bonus peg -------
-	driveForwardEncoder(100, 6*1440);
+	turnLeftGyro(100, -420);
+	driveForwardEncoder(100, 2*1440);
+	armPosition = kLowRackPos;
+	StartTask(lowerArm);
 	driveForwardToLine(100, kWhite);
 	turnRightGyro(100, -900);
 	driveForwardSonar(100, 3);
