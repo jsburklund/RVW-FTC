@@ -16,7 +16,7 @@ int kRed  = 30;
 int kGrey = 78;
 int kWhite = 89;
 
-long kLowRackPos = 600;
+long kLowRackPos = 800;
 long kMidRackPos = 2000;
 long kHighRackPos = 2800;
 long armPosition = kLowRackPos;
@@ -25,6 +25,7 @@ long armPosition = kLowRackPos;
 //for user feedback
 long reading;
 long readingHead;
+long readingB;
 
 //------------- Function Declarations ---------
 void resetDriveEncoders();
@@ -35,6 +36,7 @@ void stopDriving();
 void driveForwardSpeed(int speed);
 void driveForwardTime(int speed, int time);
 void driveForwardToLine(int speed, int lightVal);
+void driveForwardToBox(int speed, int lightVal);
 void driveForwardEncoder(int speed, long ticks);
 void driveForwardSonar(int speed, int dist);
 void driveBackwardSpeed(int speed);
@@ -82,7 +84,7 @@ task main() {
 
 	//------- Score in low goal 1 -------
 	turnLeftGyro(100, -700);
-	driveForwardEncoder(100, 1.5*1440);
+	driveForwardEncoder(100, 1.25*1440);
 	openGripper();
 
 	//------- Return to dispensor -------
@@ -147,22 +149,132 @@ task main() {
 	closeGripper();
 
 	//------- Score on left Bonus peg -------
-	turnLeftGyro(100, -420);
+	turnLeftGyro(100, -450);
 	driveForwardEncoder(100, 2*1440);
 	armPosition = kLowRackPos;
 	StartTask(lowerArm);
 	driveForwardToLine(100, kWhite);
-	turnRightGyro(100, -900);
+	turnLeftGyro(100, -950);
 	driveForwardSonar(100, 3);
 	openGripper();
 	driveForwardTime(100, 500);   //ram the wall for alignment
+
+	//------- Drive to next dispensor
 	driveBackwardEncoder(100, 1440);
+	turnRightGyro(100, 420);
+	closeGripper();
+	driveForwardToLine(100, kWhite);
+
+	//------- Score on left high peg -------
+	armPosition = kHighRackPos;
+	StartTask(liftArm);
+	turnRightGyro(100, 1400);
+	driveForwardEncoder(100, 2*1440);
+	driveForwardToLine(100, kWhite);
+	turnLeftGyro(100, 900);
+	driveForwardEncoder(100, 0.75*1440);
+	openGripper();
+
+	//------- Return to dispensor -------
+	driveBackwardEncoder(100, 0.75*1440);
+	turnRightGyro(100, 1500);
+	armPosition = kLowRackPos;
+	StartTask(lowerArm);
+	driveBackwardEncoder(100, 1440);
+	closeGripper();
+	driveBackwardToLine(100, kWhite);
+
+	//------- score in low goal 5 -------
+	turnLeftGyro(100, 1000);
+	driveForwardEncoder(100, 1.5*1440);
+	openGripper();
+
+	//------- return to dispensor -------
+	turnRightGyro(100, 1600);
+	driveBackwardToLine(100, kWhite);
+	closeGripper();
+
+	//------- score in low goal 6 -------
+	turnLeftGyro(100, 450);
+	driveForwardToBox(100, kRed);
+	openGripper();
+
+	//------- return to dispensor -------
+	driveBackwardToLine(100, kWhite);
+	closeGripper();
+
+	//------- score in low goal 7 -------
+	turnRightGyro(100, 600);
+	driveForwardEncoder(100, 2.5*1440);
+	driveForwardToBox(100, kRed);
+	openGripper();
+	wait1Msec(200);
+
+	//------- drive to next dispensor -------
+	turnRightGyro(100, 1200);
+	closeGripper();
+	driveForwardToLine(100, kWhite);
+
+	//------- score in low goal 8 -------
+	turnRightGyro(100, 2400);
+	driveForwardToBox(100, kRed);
+	driveForwardEncoder(100, 0.5*1440);
+	openGripper();
+
+	//------- return to dispensor -------
+	driveBackwardToLine(100, kWhite);
+	closeGripper();
+
+	//------- score on right low peg -------
+	turnLeftGyro(100, 2000);
+	driveForwardEncoder(100, 2*1400);
+	driveForwardToLine(100, kWhite);
+	turnRightGyro(100, 2700);
+	openGripper();
+
+	//------- return to dispensor -------
+	turnLeftGyro(100, 2000);
+	closeGripper();
+	driveBackwardEncoder(100, 1440);
+	driveBackwardToLine(100, kWhite);
+
+	//------- score on right mid peg -------
+	driveForwardEncoder(100, 2*1440);
+	armPosition = kMidRackPos;
+	StartTask(liftArm);
+	driveForwardToLine(100, kWhite);
+	turnRightGyro(100, 2700);
+	driveForwardEncoder(100, 1440);
+	openGripper();
+
+	//------- return to dispensor -------
+	driveBackwardEncoder(100, 1440);
+	turnLeftGyro(100, 2000);
+	driveBackwardEncoder(100, 1440);
+	closeGripper();
+	driveBackwardToLine(100, kWhite);
+
+	//------- score on right high peg -------
+	driveForwardEncoder(100, 2*1440);
+	armPosition = kHighRackPos;
+	StartTask(liftArm);
+	driveForwardToLine(100, kWhite);
+	turnRightGyro(100, 2700);
+	driveForwardEncoder(100, 1440);
+	openGripper();
+
+
+
+
 
 
 	stopDriving();
 	wait1Msec(30000);
 
 }
+
+
+
 
 
 
@@ -217,6 +329,15 @@ void driveForwardToLine(int speed, int lightVal) {
 		wait1Msec(50);					//continously check sensor
 	}													//reading until light value is reached
 	stopDriving();
+}
+
+void driveForwardToBox(int speed, int lightVal) {
+  driveForwardSpeed(speed);
+
+  while( SensorValue[lightSensor]> lightVal ) {
+    wait1Msec(50);
+  }
+  stopDriving();
 }
 
 void driveForwardEncoder(int speed, long ticks) {
@@ -350,11 +471,18 @@ task gripperUp() {
   wait1Msec(100);
   motor[motorB] = 0;
 
-  motor[motorB] = 50;   //move motor to specified up position
+  motor[motorB] = 60;   //move motor to specified up position
   while (nMotorEncoder[motorB] < 150) {
-    reading = nMotorEncoder[motorB];
+    readingB = nMotorEncoder[motorB];
   }
   motor[motorB] = 0;
+
+  wait1Msec(1000);
+  motor[motorB] = -20;
+  while (nMotorEncoder[motorB] > 140) {
+  }
+  motor[motorB] = 0;
+  readingB = nMotorEncoder[motorB];
   StopTask(gripperUp);
 }
 
