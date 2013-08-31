@@ -195,7 +195,7 @@ task main() {
 	closeGripper();
 
 	//------- score in low goal 6 -------
-	turnLeftGyro(100, 450);
+	turnLeftGyro(100, 370);
 	driveForwardToBox(100, kRed);
 	openGripper();
 
@@ -205,7 +205,7 @@ task main() {
 
 	//------- score in low goal 7 -------
 	turnRightGyro(100, 600);
-	driveForwardEncoder(100, 2.5*1440);
+	driveForwardEncoder(100, 4*1440);
 	driveForwardToBox(100, kRed);
 	openGripper();
 	wait1Msec(200);
@@ -235,7 +235,7 @@ task main() {
 	//------- return to dispensor -------
 	turnLeftGyro(100, 2000);
 	closeGripper();
-	driveBackwardEncoder(100, 1440);
+	driveBackwardEncoder(100, 2*1440);
 	driveBackwardToLine(100, kWhite);
 
 	//------- score on right mid peg -------
@@ -250,7 +250,7 @@ task main() {
 	//------- return to dispensor -------
 	driveBackwardEncoder(100, 1440);
 	turnLeftGyro(100, 2000);
-	driveBackwardEncoder(100, 1440);
+	driveBackwardEncoder(100, 2*1440);
 	closeGripper();
 	driveBackwardToLine(100, kWhite);
 
@@ -265,12 +265,9 @@ task main() {
 
 
 
-
-
-
+  //------- End! -------
 	stopDriving();
-	wait1Msec(30000);
-
+	wait1Msec(1000);
 }
 
 
@@ -479,7 +476,7 @@ task gripperUp() {
 
   wait1Msec(1000);
   motor[motorB] = -20;
-  while (nMotorEncoder[motorB] > 140) {
+  while (nMotorEncoder[motorB] > 150) {
   }
   motor[motorB] = 0;
   readingB = nMotorEncoder[motorB];
